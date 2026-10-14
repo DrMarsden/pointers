@@ -1,0 +1,564 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pointers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: the student's own page. Works Cited card and the passage on paper at the left; choices and the check at the right. Sibling of Core Elements. */
+:root{
+  --bg:#e6e4ec; --ink:#1f1d26; --muted:#5d5968; --rule:#c8c4d2; --card:#f7f6fa; --well:#eeecf3;
+  --accent:#4a3f78; --accent-ink:#ffffff; --stamp:#b0281d; --ok:#2c6a3a; --hl:#f3dc8a; --course:#8a5a12;
+  --leaf:#fbfaf6; --leaf-ink:#1d1b18;
+  --f-display:"Libre Caslon Display","Libre Caslon Text",Georgia,serif;
+  --f-book:"Libre Caslon Text",Georgia,"Times New Roman",serif;
+  --f-paper:"Times New Roman",Times,"Libre Caslon Text",serif;
+  --f-ui:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-type:"Courier Prime","Courier New",Courier,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16141c; --ink:#e6e3ee; --muted:#a29db0; --rule:#3a3647; --card:#1f1c27; --well:#26222f;
+  --accent:#b3a6ea; --accent-ink:#17131f; --stamp:#ec7466; --ok:#7cc68c; --hl:#6b5a1c; --course:#e0b060;
+  --leaf:#efece4; --leaf-ink:#1d1b18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16141c; --ink:#e6e3ee; --muted:#a29db0; --rule:#3a3647; --card:#1f1c27; --well:#26222f;
+  --accent:#b3a6ea; --accent-ink:#17131f; --stamp:#ec7466; --ok:#7cc68c; --hl:#6b5a1c; --course:#e0b060;
+  --leaf:#efece4; --leaf-ink:#1d1b18; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.5;padding:0 16px 80px}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+h1{font-family:var(--f-display);font-weight:400;font-size:2.4rem;line-height:1;margin:0}
+.sub{color:var(--muted);font-size:.92rem;margin:4px 0 0}
+.views{display:flex;gap:4px;flex-wrap:wrap}
+.views button{font:inherit;font-size:.9rem;border:1px solid var(--rule);background:transparent;color:var(--ink);padding:6px 14px;border-radius:3px;cursor:pointer}
+.views button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.strip{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 18px}
+.strip button{font:inherit;min-width:44px;height:44px;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-variant-numeric:tabular-nums;position:relative}
+.strip button[aria-current="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.strip button.done::after{content:"";position:absolute;right:4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.task h2{font-family:var(--f-book);font-weight:400;font-size:1.45rem;margin:2px 0 6px;text-wrap:balance}
+.desk{border-left:3px solid var(--accent);padding:6px 0 6px 12px;margin:10px 0 16px;font-family:var(--f-book);font-style:italic}
+.desk b{font-style:normal;font-family:var(--f-ui);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--leaf);color:var(--leaf-ink);border-radius:2px;padding:14px 18px;box-shadow:0 1px 0 rgba(0,0,0,.06),0 6px 16px -10px rgba(0,0,0,.35);overflow-wrap:anywhere}
+.card .label{color:#6b6676}
+.wc{font-family:var(--f-paper);font-size:1.02rem;line-height:1.7;margin:6px 0 0;padding-left:2em;text-indent:-2em}
+.src{font-family:var(--f-paper);font-size:1.02rem;line-height:1.6;margin:6px 0 0}
+.src .ln{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:6px}
+.src .ln span:first-child{color:#8b8576;font-family:var(--f-ui);font-size:.75rem;padding-top:4px;text-align:right}
+.paper{background:#ffffff;color:#111111;font-family:var(--f-paper);font-size:1.08rem;line-height:2;padding:22px 26px;box-shadow:0 6px 18px -8px rgba(0,0,0,.35);border-radius:1px;overflow-wrap:anywhere}
+.paper .lbl{font-family:var(--f-ui);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#77727f;display:block;line-height:1.4;margin-bottom:4px}
+.paper p{margin:0;text-indent:.5in}
+.slot{display:inline;cursor:pointer;border-radius:3px;padding:1px 3px;border-bottom:2px solid #4a3f78;background:rgba(74,63,120,.08);white-space:normal}
+.slot.tiny{padding:1px 8px;margin:0 1px}
+.slot.empty{font-family:var(--f-ui);font-size:.8rem;color:#4a3f78;border:1px dashed #4a3f78;padding:2px 8px;text-indent:0}
+.slot.open{background:#f3dc8a;box-shadow:0 0 0 2px #f3dc8a}
+.slot.bad{border-bottom-color:#b0281d;background:rgba(176,40,29,.12)}
+.slot.good{border-bottom-color:#2c6a3a;background:rgba(44,106,58,.1)}
+.slot:focus-visible{outline:2px solid #4a3f78;outline-offset:2px}
+.bslot{display:block;border:1px dashed #4a3f78;border-radius:3px;padding:6px 8px;margin:6px 0;cursor:pointer;text-indent:0}
+.bslot.set{border-style:solid;border-color:rgba(74,63,120,.35)}
+.bslot.open{box-shadow:0 0 0 3px #f3dc8a}
+.bslot.bad{border-color:#b0281d;box-shadow:inset 3px 0 0 #b0281d}
+.bslot.good{border-color:#2c6a3a;box-shadow:inset 3px 0 0 #2c6a3a}
+.paper p.bq{margin:0 0 0 .5in;text-indent:0}
+.paper p.spk{margin:0 0 0 .5in;padding-left:.25in;text-indent:-.25in}
+.paper p.runin{text-indent:.5in}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;text-align:left;border:1px solid var(--rule);background:var(--leaf);color:var(--leaf-ink);border-radius:3px;padding:8px 12px;cursor:pointer;font-family:var(--f-paper);font-size:1.02rem;line-height:1.6}
+.opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt .paper{box-shadow:none;padding:6px 4px;font-size:.95rem;line-height:1.9}
+.opt:focus-visible,.btn:focus-visible,.chip:focus-visible,.strip button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:.88rem;color:var(--muted);margin:0}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-weight:700;border:0;background:var(--accent);color:var(--accent-ink);padding:10px 18px;border-radius:3px;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);font-weight:400}
+.btn:disabled{opacity:.4;cursor:default}
+.linkbtn{font:inherit;font-size:.85rem;background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 0;text-decoration:underline;text-align:left}
+.proof{border-top:2px solid var(--ink);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.stampline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stamp{font-family:var(--f-type);font-weight:700;letter-spacing:.14em;text-transform:uppercase;border:2px solid currentColor;padding:3px 10px;transform:rotate(-2deg);display:inline-block}
+.stamp.clean{color:var(--ok)}.stamp.dirty{color:var(--stamp)}
+.corr{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.corr li{border-left:3px solid var(--stamp);padding:2px 0 2px 10px;font-size:.92rem}
+.corr li b{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--stamp)}
+.course{display:inline-block;font-family:var(--f-ui);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--course);border:1px solid currentColor;border-radius:2px;padding:0 5px;margin-left:6px;vertical-align:middle;line-height:1.5}
+.chip{font:inherit;font-size:.86rem;border:1px solid var(--rule);background:var(--card);color:var(--ink);padding:6px 9px;border-radius:3px;cursor:pointer;text-align:left}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.pagewrap{background:var(--well);border:1px solid var(--rule);border-radius:3px;padding:16px;overflow-x:auto}
+.sheet{background:#fff;color:#111;width:100%;min-width:300px;aspect-ratio:8.5/11;max-height:none;position:relative;box-shadow:0 6px 18px -8px rgba(0,0,0,.35);padding:9.1% 11.8%;overflow:hidden;font-size:clamp(9px,1.55vw,15px)}
+@media (max-width:860px){.sheet{font-size:clamp(8px,2.6vw,15px)}}
+.sheet .rh{position:absolute;top:4.5%;right:11.8%;white-space:nowrap}
+.sheet p{margin:0}
+.keys{display:flex;flex-direction:column;gap:18px;max-width:900px}
+.keys article{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:16px 18px}
+.keys h3{font-family:var(--f-book);font-weight:400;font-size:1.2rem;margin:0 0 8px}
+.keys .flag{border-left:3px solid var(--hl);padding:4px 0 4px 10px;margin-top:10px;font-size:.9rem}
+.prose{max-width:68ch}
+.prose a,.gcard a{color:var(--accent)}
+.guide{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:28px;align-items:start;margin-top:18px}
+@media (max-width:760px){.guide{grid-template-columns:minmax(0,1fr)}}
+.grail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:760px){.grail{position:static;order:2}}
+.grail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.grail button{font:inherit;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;color:var(--ink);padding:6px 10px;cursor:pointer;font-size:.92rem;font-family:var(--f-book)}
+.grail button[aria-current="true"]{border-left-color:var(--accent);background:var(--card)}
+.gcard{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:22px 24px;min-width:0;max-width:52rem}
+.gcard h2{font-family:var(--f-book);font-weight:400;font-size:1.7rem;margin:4px 0 12px;text-wrap:balance}
+.gcard h4{margin:20px 0 8px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.gcard p,.gcard li{max-width:66ch}
+.gcard ul{padding-left:1.2em;display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.gex{background:var(--leaf);color:var(--leaf-ink);border-radius:2px;padding:10px 14px 12px;margin:8px 0}
+.gex .label{color:#6b6676}
+.gex .p{font-family:var(--f-paper);font-size:1.05rem;line-height:1.75;margin:4px 0 0}
+.gex mark{background:#f3dc8a;color:#1d1b18;padding:0 2px;border-radius:2px}
+.gex .wc{font-size:.98rem}
+.gnav{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:24px;padding-top:16px;border-top:1px solid var(--rule)}
+.slipbox{background:var(--leaf);color:var(--leaf-ink);font-family:var(--f-type);padding:14px;border-radius:2px;overflow-wrap:anywhere}
+input,textarea{font:inherit;width:100%;padding:10px;border:1px solid var(--rule);border-radius:3px;background:var(--well);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Pointers</h1>
+      <p class="sub">MLA 9 in-text citation, quotation, and page layout. A companion to Core Elements. Vibe-coded by Steve Marsden and Claude.</p>
+    </div>
+    <div class="views" role="group" aria-label="View">
+      <button id="vGuide" aria-pressed="false">Guide</button>
+      <button id="vBench" aria-pressed="false">Practice</button>
+      <button id="vSlip" aria-pressed="false">Completion slip</button>
+    </div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+/* ---------- Course rules. Rules MLA leaves open but this course sets. Set on:false to accept any legible typeface at a standard size. ---------- */
+const COURSE={on:true,font:'Times New Roman',size:'12 pt'};
+const CR='<span class="course">This course</span>';
+
+/* ---------- Works-cited entries the exercises point to (all invented for practice) ---------- */
+const W={
+ voss:'Voss, Martha Ellery. <i>The Lantern and the Loom: Weaving Women of the Piney Woods</i>. Sabine River UP, 2019.',
+ voss2:'Voss, Martha Ellery. <i>Spindles and Saints: Church Life on the Texas Frontier</i>. Sabine River UP, 2022.',
+ okafor:'Okafor, Delphine, and Ruben Castañeda. <i>Field Notes on the Southern Gothic</i>. 3rd ed., Bluebonnet Press, 2022.',
+ pike:'Pike, Lorna, et al. <i>Teaching the Unteachable: Horror in the Composition Classroom</i>. U of Caddo Lake P, 2021.',
+ haunt:'“Haunted Houses of the Old Neches Road.” <i>Big Thicket Heritage Society</i>, 2 May 2024, www.bigthicketheritage.org/news/haunted-houses-neches-road.',
+ film:'<i>Nightfall at Caddo Lake</i>. Directed by Harriet Gaines, Pineywood Pictures, 1974.',
+ poe:'Poe, Edgar Allan. “The City in the Sea.” <i>The Hollow Reed: An Anthology of Nineteenth-Century American Verse</i>, edited by Constance Whitlow, Gallows Hill Press, 2017, pp. 88-89.',
+ ham:'Shakespeare, William. <i>Hamlet</i>. Edited by Constance Whitlow, Gallows Hill Press, 2015.',
+ fenwick:'Fenwick, Adair. “Ghost Lights and Gaslight: Spectral Technology in Ambrose Bierce.” <i>Western Gothic Quarterly</i>, vol. 14, no. 2, 2020, pp. 117-38.',
+ brandt:'Brandt, Celia. “Lamplight and Terror in <i>The Turn of the Screw</i>.” <i>Studies in the Ghost Story</i>, vol. 7, no. 1, 2018, pp. 33-52.',
+ brandt2:'Brandt, Otto. <i>Candle and Lamp in American Fiction</i>. Redbud Press, 2014.',
+ holloway:'Holloway, Lucinda Graves. <i>The Ferryman’s Wake: A Play in Three Acts</i>. Redbud Press, 2010.'
+};
+
+/* ---------- Exercises. A passage is text plus slots; each slot offers forms, and the key lists the acceptable ones. ---------- */
+const S=(id,label,opts,key,block)=>({id,label,opts:opts.map(o=>Array.isArray(o)?{h:o[0],n:o[1],d:o[2]}:{h:o}),key,block:!!block});
+const LONG='The spinning wheel came west in the wagon bed, lashed between the flour barrel and the family Bible. It was the last thing loaded and the first thing unpacked, and in more than one family it outlasted the house it was carried to. Widows who sold the land, the stock, and the furniture kept the wheel, because a woman who could spin could still be said to keep a house.';
+const DIA=[['CALLIE','Nobody crosses after dark. You know that.'],['FERRYMAN','I know what the parish says. The river never said a word about it to me, and I have listened to it longer than any of them.']];
+function dialogue(style){
+  if(style==='ok')return DIA.map(([n,t],i)=>`<p class="spk">${n}. ${t}${i===DIA.length-1?' (2.1)':''}</p>`).join('');
+  if(style==='lower')return DIA.map(([n,t],i)=>`<p class="spk">${n.charAt(0)+n.slice(1).toLowerCase()}: ${t}${i===DIA.length-1?' (2.1)':''}</p>`).join('');
+  if(style==='quotes')return DIA.map(([n,t],i)=>`<p class="spk">${n}. “${t}”${i===DIA.length-1?' (2.1)':''}</p>`).join('');
+  return `<p class="runin">${DIA.map(([n,t])=>`${n.charAt(0)+n.slice(1).toLowerCase()} says, “${t}”`).join(' ')} (2.1).</p>`;
+}
+const EX=[
+{name:'Author and page',task:'Finish the citation for the quotation. Voss is not named in the sentence.',
+ desk:'An in-text citation points to an entry in your Works Cited list. Give the first word of that entry, usually the author’s last name, and the page.',
+ wc:['voss'],src:{cap:'Voss, page 47',h:'Spinning was the one craft a widow could practice at night, when the children slept and the neighbors could not see how poor she had become.'},
+ parts:['<p>In the Piney Woods, spinning was “the one craft a widow could practice at night',S('c','The citation',[
+  ['” (Voss 47).'],['.” (Voss 47)','The period goes after the citation, not inside the quotation marks.'],['” (Voss, 47).','No comma between the author and the page number.'],['” (Voss p. 47).','No “p.” or “page” in an in-text citation. The number alone is the page.'],['” (Martha Ellery Voss 47).','Give only the last name: the word the works-cited entry begins with.']],[0]),'</p>']},
+
+{name:'The author named in your sentence',task:'Finish the citation. This time you name Voss yourself.',
+ desk:'When your sentence names the author, the parentheses only need the page.',
+ wc:['voss'],src:{cap:'Voss, page 47',h:'Spinning was the one craft a widow could practice at night, when the children slept and the neighbors could not see how poor she had become.'},
+ parts:['<p>As Voss observes, spinning was “the one craft a widow could practice at night',S('c','The citation',[
+  ['” (47).'],['” (Voss 47).','Voss is already named in your sentence. Give just the page.'],['” (p. 47).','In-text citations never use “p.” Give the number alone.'],['” 47.','The page number goes in parentheses.']],[0]),'</p>']},
+
+{name:'Two authors',task:'Cite the quotation from Okafor and Castañeda’s book.',
+ desk:'Two authors: both last names, joined by “and.”',
+ wc:['okafor'],src:{cap:'Okafor and Castañeda, page 112',h:'The Southern Gothic does not haunt the house; it haunts the deed to the house.'},
+ parts:['<p>One survey of the genre puts it bluntly: the Southern Gothic “haunts the deed to the house',S('c','The citation',[
+  ['” (Okafor and Castañeda 112).'],['” (Okafor &amp; Castañeda 112).','Write out “and.”'],['” (Okafor, Castañeda 112).','Join two authors’ names with “and.”'],['” (Okafor et al. 112).','Et al. is for three or more authors. Name both.'],['” (Okafor 112).','The book has two authors. Name both.']],[0]),'</p>']},
+
+{name:'Three or more authors',task:'Cite the quotation from Pike’s book.',
+ desk:'The works-cited entry begins “Pike, Lorna, et al.” The citation follows it.',
+ wc:['pike'],src:{cap:'Pike et al., page 40',h:'Students who will not read a sonnet will read a ghost story twice.'},
+ parts:['<p>Horror can win over reluctant readers, since students who avoid poetry “will read a ghost story twice',S('c','The citation',[
+  ['” (Pike et al. 40).'],['” (Pike, Abernathy, and Watanabe 40).','With three or more authors, give the first author’s last name and et al.'],['” (Pike et. al. 40).','No period after “et.” Only “al.” is abbreviated.'],['” (Pike, et al. 40).','No comma before et al. in an in-text citation.'],['” (Pike 40).','Add et al. to show there are other authors.']],[0]),'</p>']},
+
+{name:'Two authors with one surname',task:'Cite Celia Brandt’s essay. Your list also has a book by Otto Brandt.',
+ desk:'When two authors in your list share a surname, add the first initial so the citation points to one entry.',
+ wc:['brandt','brandt2'],src:{cap:'Celia Brandt, page 41',h:'The candle frames the ghost before the ghost appears.'},
+ parts:['<p>Candlelight, one critic argues, “frames the ghost before the ghost appears',S('c','The citation',[
+  ['” (C. Brandt 41).'],['” (Brandt 41).','Two authors in your list are named Brandt. Add the first initial.'],['” (Celia Brandt 41).','Use the first initial in a citation: C. Brandt.'],['” (Brandt, C. 41).','The initial goes before the surname: C. Brandt.']],[0]),'</p>'],
+ flag:'First initial for authors who share a surname, per the OWL’s in-text page and the MLA Style Center (eighth-edition post).'},
+{name:'No author',task:'Cite the web page.',
+ desk:'With no author, the works-cited entry begins with the page’s title, so the citation does too, shortened. A web page has no page numbers, so none are given.',
+ wc:['haunt'],src:{cap:'The web page',h:'Every house on the old road has a story, and most of them have two.'},
+ parts:['<p>The local preservation society notes that “every house on the old road has a story',S('c','The citation',[
+  ['” (“Haunted Houses”).'],['” (Haunted Houses).','A shortened title keeps its styling: quotation marks for a web page, as in the works-cited entry.'],['” (<i>Big Thicket Heritage Society</i>).','Point to the first element of the entry. This entry begins with the page’s title, not the website’s.'],['” (“Haunted Houses” 1).','A web page has no page numbers. Don’t supply one.'],['” (“Haunted Houses of the Old Neches Road”).','Shorten a long title in a citation. The first noun phrase is enough.']],[0]),'</p>']},
+
+{name:'A film, by its title',task:'Cite the line of dialogue. It is spoken between 00:41:10 and 00:41:52.',
+ desk:'Point to whatever the works-cited entry begins with. This entry begins with the film’s title. For a film, the location is a time range.',
+ wc:['film'],
+ parts:['<p>The sheriff’s warning, “Nobody fishes the north arm after dark,” is first spoken just after the storm',S('c','The citation',[
+  [' (<i>Nightfall at Caddo Lake</i> 00:41:10-00:41:52).'],[' (Gaines 00:41:10-00:41:52).','Your entry begins with the film’s title, so the citation does too. Cite the director only when the entry begins with the director.'],[' (<i>Nightfall at Caddo Lake</i>).','Give the time range: hours, minutes, and seconds.'],[' (“Nightfall at Caddo Lake” 00:41:10-00:41:52).','A film’s title is italicized, here as in the works-cited entry.']],[0]),'</p>'],
+ flag:'Title first, matching an entry that begins with the title. The OWL’s advice to cite a film by its director applies when the entry begins with the director.'},
+
+{name:'Two works by one author',task:'Cite the quotation from <i>The Lantern and the Loom</i>.',
+ desk:'Your list has two books by Voss. A short title tells the reader which one you mean.',
+ wc:['voss','voss2'],src:{cap:'Voss, The Lantern and the Loom, page 61',h:'A spinning wheel was a widow’s whole estate.'},
+ parts:['<p>Voss calls the spinning wheel “a widow’s whole estate',S('c','The citation',[
+  ['” (<i>Lantern</i> 61).'],['” (61).','Your list has two books by Voss. Add a short title to say which.'],['” (<i>The Lantern and the Loom: Weaving Women of the Piney Woods</i> 61).','Shorten the title in a citation.'],['” (“Lantern” 61).','A book’s title is italicized, even shortened.'],['” (Voss 61).','Voss is named in your sentence, and the list has two of her books. Give a short title instead.']],[0]),'</p>'],
+ flag:'Short title begins with the word the entry is alphabetized under (Lantern, skipping The).'},
+
+{name:'Two sources at once',task:'Both books make this point: Okafor and Castañeda on page 98, Pike and her coauthors on page 12.',
+ desk:'Two sources for one point go in one set of parentheses.',
+ wc:['okafor','pike'],
+ parts:['<p>Both studies treat the ghost story as a way into close reading',S('c','The citation',[
+  [' (Okafor and Castañeda 98; Pike et al. 12).'],[' (Okafor and Castañeda 98, Pike et al. 12).','Separate two sources in one citation with a semicolon.'],[' (Okafor and Castañeda 98) (Pike et al. 12).','When two sources support the same point, put them in one set of parentheses, separated by a semicolon.'],[' (Okafor and Castañeda 98 and Pike et al. 12).','Separate two sources with a semicolon, not “and.”']],[0]),'</p>']},
+
+{name:'Words quoted in your source',task:'Cite the widow’s words, which you found in Voss.',
+ desk:'You are quoting a diary you have not seen. You read it in Voss, and Voss is what your Works Cited lists.',
+ wc:['voss'],src:{cap:'Voss, page 52',h:'One widow wrote in her diary, “I spin until the candle fails, and then I spin by feel.”'},
+ parts:['<p>One widow’s diary records that she would keep working after dark and “spin by feel',S('c','The citation',[
+  ['” (qtd. in Voss 52).'],['” (Voss 52).','These are the widow’s words, not Voss’s. Show where you found them with qtd. in.'],['” (quoted in Voss 52).','Abbreviate: qtd. in.'],['” (qtd. in Voss, 52).','No comma between the author and the page.']],[0]),'</p>']},
+
+{name:'One source, several citations',task:'Set the four citations. Voss is pages 47, 61, and 63; Okafor and Castañeda make their point on page 140.',
+ desk:'Once a paragraph has named its source, later citations to that source need only the page, as long as no other source comes between. After another source, name the first one again.',
+ wc:['voss','okafor'],
+ parts:['<p>Voss treats spinning as a widow’s last trade. It was “the one craft a widow could practice at night',S('s1','First citation',[
+  ['” (47),'],['” (Voss 47),'],['” (Voss, 47),','No comma between the author and the page.']],[0,1]),' and the wheel itself was “a widow’s whole estate',S('s2','Second citation',[
+  ['” (61).'],['” (Voss 61).'],['” (p. 61).','No “p.” in an in-text citation.']],[0,1]),' Okafor and Castañeda find the same pattern across the region, where such households were haunted less by ghosts than by debt',S('s3','Third citation',[
+  [' (140).'],[' (Okafor and Castañeda 140).']],[0,1]),' Yet the wheel stayed “by the hearth, where the light was best',S('s4','Fourth citation',[
+  ['” (Voss 63).'],['” (63).','Another source came between. Name Voss again, or the page will be read as Okafor and Castañeda’s.']],[0]),'</p>'],
+ flag:'From the MLA Style Center: a source defined at the start need not be named again “unless ambiguity would result” (eighth-edition post quoting the Handbook). The first three citations accept the name or the page alone; the fourth requires the name.'},
+{name:'Names: first mention and after',task:'Choose how to name the author each time.',
+ desk:'Give a person’s full name the first time you mention them, and the surname alone after that.',
+ wc:['voss','voss2'],
+ parts:['<p>',S('n1','First mention',[
+  ['Martha Ellery Voss'],['Voss','Give the full name the first time you mention someone.'],['Ms. Voss','Give the full name, as it appears on the work, the first time: Martha Ellery Voss.'],['Martha','Give the full name the first time you mention someone: Martha Ellery Voss.']],[0]),' spent a decade reading the diaries of East Texas widows. ',S('n2','Second mention',[
+  ['Voss'],['Martha','After the first mention, use the surname alone.'],['Martha Ellery Voss','Give the full name only the first time. After that, the surname alone.'],['Ms. Voss','After the first mention, use the surname alone.']],[0]),' found that spinning, more than any other work, let a widow keep her house. In her second book, ',S('n3','Third mention',[
+  ['Voss'],['Martha','After the first mention, use the surname alone.'],['M. E. Voss','Initials are for telling apart authors who share a surname. Here, the surname alone.']],[0]),' turns from the hearth to the church.</p>'],
+ flag:'Full name at first mention, surname after, per the MLA Style Center (ninth edition). Characters in a work may be called what the work calls them after their first full mention; that is not tested here.'},
+{name:'A quotation that floats',task:'Choose the version that uses the quotation properly.',
+ desk:'A quotation can’t stand alone as a sentence. Carry it in a sentence of your own, and name the author so the reader knows whose words they are.',
+ wc:['voss'],src:{cap:'Voss, page 47',h:'Spinning was the one craft a widow could practice at night, when the children slept and the neighbors could not see how poor she had become.'},
+ parts:[S('q','The passage',[
+  ['<p>Widows had few ways to earn money. Voss argues that spinning was “the one craft a widow could practice at night” (47).</p>'],
+  ['<p>Widows had few ways to earn money. “The one craft a widow could practice at night” (Voss 47).</p>','The quotation is not a sentence and is not part of one. Work it into a sentence of your own.'],
+  ['<p>Widows had few ways to earn money. “Spinning was the one craft a widow could practice at night” (Voss 47).</p>','The quotation floats: nothing of yours introduces it, so a reader can’t tell where your idea ends and Voss’s begins. Introduce it, naming Voss.'],
+  ['<p>Widows had few ways to earn money; spinning was the one craft a widow could practice at night.</p>','These are Voss’s words. Without quotation marks and a citation, this is plagiarism.']],[0],true)],
+ course:true,flag:'From the instructor’s guidance on quoting: quotations are carried by the writer’s own sentences, ideally naming the author.'},
+{name:'Introducing a quotation',task:'Choose the punctuation before each quotation.',
+ desk:'A colon follows a complete sentence that introduces the quotation. A comma follows a verb of saying such as “writes.” When the quotation runs on as part of your own sentence, nothing comes before it.',
+ wc:['voss'],
+ parts:['<p>Voss’s claim is blunt',S('a','After “blunt”',[
+  [':',null,'a colon'],[',','A complete sentence introduces this quotation, so use a colon.','a comma'],['','A complete sentence introduces this quotation. Mark the join with a colon.','nothing']],[0]),' “Spinning was the one craft a widow could practice at night” (47). She writes',S('b','After “writes”',[
+  [',',null,'a comma'],[':','After a verb of saying, such as “writes,” use a comma. A colon follows a complete sentence.','a colon'],['','Put a comma after “writes” to introduce the quotation.','nothing']],[0]),' “A spinning wheel was a widow’s whole estate” (61). She argues that',S('c','After “that”',[
+  ['',null,'nothing'],[',','The quotation is part of your own sentence after “that.” No punctuation introduces it.','a comma'],[':','The quotation is part of your own sentence after “that.” No punctuation introduces it.','a colon']],[0]),' “a woman who could spin could still be said to keep a house” (74).</p>'],
+ course:true,flag:'From the instructor’s guidance on quoting (colon after a complete sentence, comma after a verb of saying, nothing when the quotation is part of the writer’s syntax).'},
+{name:'Quoting exactly',task:'Only one version matches the source word for word. Find it.',
+ desk:'Everything inside quotation marks must be exactly as written. Check every word, and never trust your memory.',
+ wc:['voss'],src:{cap:'Voss, page 61',h:'A spinning wheel was a widow’s whole estate.'},
+ parts:['<p>Voss calls the wheel ',S('q','The quotation',[
+  ['“a widow’s whole estate”'],['“a widow’s entire estate”','Voss wrote “whole,” not “entire.” Check every word against the source.'],['“the widow’s whole estate”','Voss wrote “a widow’s,” not “the widow’s.”'],['“a widows whole estate”','Keep the source’s punctuation inside the quotation: “widow’s.”']],[0]),' (61).</p>']},
+{name:'A question in the quotation',task:'Finish the sentence. The question is Fenwick’s.',
+ desk:'Periods and commas go after the citation. A question mark stays inside the quotation marks when it belongs to the quotation.',
+ wc:['fenwick'],src:{cap:'Fenwick, page 124',h:'What did a ghost look like once the streets were lit?'},
+ parts:['<p>Fenwick asks, “What did a ghost look like once the streets were lit',S('c','The ending',[
+  ['?” (124).'],['” (124)?','The question mark belongs to Fenwick, so it stays inside the quotation marks. Your sentence then ends with a period after the citation.'],['?” (124)','Your sentence still needs its period, after the citation.'],['.” (124).','Keep the question mark. It is part of what Fenwick wrote.']],[0]),'</p>']},
+
+{name:'A question of your own',task:'Finish the sentence. This time the question is yours.',
+ desk:'When the question is yours, the question mark ends your sentence, after the citation.',
+ wc:['voss'],src:{cap:'Voss, page 47',h:'Spinning was the one craft a widow could practice at night, when the children slept and the neighbors could not see how poor she had become.'},
+ parts:['<p>Was spinning really “the one craft a widow could practice at night',S('c','The ending',[
+  ['” (Voss 47)?'],['?” (Voss 47).','The question is yours, not Voss’s. The question mark goes after the citation.'],['” (Voss 47).','Your sentence is a question. End it with a question mark after the citation.'],['”? (Voss 47)','The citation belongs to your sentence, so the question mark comes after it.']],[0]),'</p>']},
+
+{name:'No citation after the quotation',task:'Set the punctuation at the three closing quotation marks.',
+ desk:'In American usage, a period or comma goes inside the closing quotation marks unless a citation follows. Colons and semicolons always go outside.',
+ wc:['voss'],
+ parts:['<p>Voss returns again and again to the word “estate',S('a','After “estate”',[
+  [',”',null,'<span style="font-family:var(--f-paper)">estate,”</span> · comma inside'],['”,','In American usage a comma goes inside the closing quotation marks.','<span style="font-family:var(--f-paper)">estate”,</span> · comma outside']],[0]),' by which she means everything a widow could keep (61). She calls spinning a widow’s “trade',S('b','After “trade”',[
+  ['”;',null,'<span style="font-family:var(--f-paper)">trade”;</span> · semicolon outside'],[';”','Semicolons and colons go outside the closing quotation marks.','<span style="font-family:var(--f-paper)">trade;”</span> · semicolon inside']],[0]),' she never once calls it a hobby (47). Her last chapter is titled “The Wheel by the Hearth',S('c','After the chapter title',[
+  ['.”',null,'<span style="font-family:var(--f-paper)">Hearth.”</span> · period inside'],['”.','With no citation after it, a period goes inside the closing quotation marks.','<span style="font-family:var(--f-paper)">Hearth”.</span> · period outside']],[0]),'</p>'],
+ flag:'Periods and commas inside closing quotation marks unless a parenthetical citation follows; colons and semicolons outside. From the OWL’s quotation-mark rules and the MLA Style Center’s post on placing a comma or period after a quotation.'},
+{name:'Lines of a poem',task:'Quote the first two lines in your sentence. Poe is named, and this is your first citation of the poem.',
+ desk:'Run-in poetry marks each line break with a slash, and cites line numbers, not pages. The first citation says “lines.”',
+ wc:['poe'],src:{cap:'“The City in the Sea,” lines 1-2',lines:[[1,'Lo! Death has reared himself a throne'],[2,'In a strange city lying alone']]},
+ parts:['<p>Poe opens with a mock coronation: “Lo! Death has reared himself a throne',S('sl','The line break',[
+  [' / '],['/','Put a space on each side of the slash.'],[' // ','A double slash marks a stanza break. These lines are in the same stanza.'],[', ','Mark a line break with a slash.']],[0]),'In a strange city lying alone',S('c','The citation',[
+  ['” (lines 1-2).'],['” (1-2).','In your first citation of a poem, say “lines.” After that, the numbers alone will do.'],['” (Poe 88).','Cite a poem by its line numbers, not the page. And Poe is named in your sentence.'],['” (Poe, lines 1-2).','Poe is already named in your sentence.']],[0]),'</p>']},
+
+{name:'Lines of a verse play',task:'Quote the two lines. Your edition numbers them act 1, scene 5, lines 166-67.',
+ desk:'A verse play is cited by act, scene, and line, in arabic numerals separated by periods, so a reader with any edition can find the passage.',
+ wc:['ham'],src:{cap:'Hamlet, act 1, scene 5',lines:[[166,'There are more things in heaven and earth, Horatio,'],[167,'Than are dreamt of in your philosophy.']]},
+ parts:['<p>In Shakespeare’s <i>Hamlet</i>, the prince warns his friend that “there are more things in heaven and earth, Horatio, / Than are dreamt of in your philosophy',S('c','The citation',[
+  ['” (1.5.166-67).'],['” (I.v.166-67).','Use arabic numerals for act and scene.'],['” (act 1, scene 5, lines 166-67).','Give act, scene, and lines as numbers separated by periods.'],['” (Shakespeare 1.5.166-67).','Shakespeare is named in your sentence.'],['” (37).','For a verse play, cite act, scene, and line so readers with any edition can find the passage.']],[0]),'</p>'],
+ flag:'Act.scene.line in arabic numerals separated by periods. The MLA Style Center confirms arabic act and scene separated by a period, (54; 1.4), and that line numbers follow them; check the full form against the Handbook.'},
+
+{name:'Leaving words out',task:'Quote Voss without the phrase “by every account that survives from those years.”',
+ desk:'Mark the gap with an ellipsis: three periods with a space before each and after the last. Watch out: Word’s AutoCorrect turns typed periods into a single ellipsis character.',
+ wc:['voss'],src:{cap:'Voss, page 58',h:'The church supper was, by every account that survives from those years, the only evening a farm wife spent away from home.'},
+ parts:['<p>Voss writes that “the church supper was',S('e','The gap',[
+  [' . . . '],['...','Space the periods: three periods with a space before each and a space after the last.'],['…','That is Word’s single ellipsis character, which AutoCorrect substitutes for typed periods. MLA uses three spaced periods.'],[' [. . .] ','Brackets around the ellipsis aren’t needed here.'],[' ','Mark the words you left out with an ellipsis.']],[0]),'the only evening a farm wife spent away from home” (58).</p>'],
+ flag:'Spaced three-period ellipsis, per the MLA Style Center’s ellipsis page (labeled eighth-edition content).'},
+
+{name:'No ellipsis needed',task:'Quote only “the one craft a widow could practice at night.”',
+ desk:'An ellipsis marks an omission the reader couldn’t otherwise see. When a quotation is plainly a piece worked into your own sentence, it needs no ellipsis at either end.',
+ wc:['voss'],src:{cap:'Voss, page 47',h:'Spinning was the one craft a widow could practice at night, when the children slept and the neighbors could not see how poor she had become.'},
+ parts:['<p>Voss calls spinning ',S('q','The quotation',[
+  ['“the one craft a widow could practice at night”'],['“. . . the one craft a widow could practice at night”','Your sentence already shows the quotation starts partway through Voss’s. No ellipsis at the start.'],['“the one craft a widow could practice at night . . .”','The quotation plainly ends partway through Voss’s sentence, since it runs into yours. No ellipsis at the end.'],['“. . . the one craft a widow could practice at night . . .”','A fragment worked into your sentence needs no ellipsis at either end.']],[0]),' (47).</p>'],
+ flag:'No opening ellipsis: the MLA Style Center (citing the Handbook, p. 81) requires ellipsis points only when an omission is not obvious, and calls opening ellipses rare. No closing ellipsis for a fragment, by the same principle; confirmed by the instructor.'},
+{name:'Adding a word',task:'The quotation begins with “She.” Make clear who she is.',
+ desk:'Words you add inside a quotation go in square brackets.',
+ wc:['voss'],src:{cap:'Voss, page 63',h:'She kept the wheel by the hearth, where the light was best.'},
+ parts:['<p>Voss notes that “',S('b','The added words',[
+  ['[the widow]'],['(the widow)','Mark words you add to a quotation with square brackets, not parentheses.'],['the widow','Words you add inside a quotation must be marked, with square brackets.']],[0]),' kept the wheel by the hearth” (63).</p>']},
+
+{name:'Titles in your sentences',task:'Style the three titles: a novella, an essay in a journal, and the journal.',
+ desk:'In your own sentences, titles are styled the way MLA styles them everywhere: italics for works that stand alone, quotation marks for works inside something larger. A comma after a quoted title goes inside the quotation marks.',
+ wc:['brandt'],
+ parts:['<p>In ',S('t1','The novella',[
+  ['<i>The Turn of the Screw</i>'],['“The Turn of the Screw”','A novella stands on its own: italics.'],['The Turn of the Screw','A title is always marked. This one takes italics.']],[0]),', the governess carries a candle through the worst scenes, a detail Brandt traces in ',S('t2','The essay',[
+  ['“Lamplight and Terror in <i>The Turn of the Screw</i>,”'],['“Lamplight and Terror in <i>The Turn of the Screw</i>”,','The comma goes inside the closing quotation marks.'],['<i>Lamplight and Terror in The Turn of the Screw</i>,','An essay in a journal takes quotation marks, and the novella’s title inside it keeps its italics.'],['“Lamplight and Terror in The Turn of the Screw,”','The novella’s title keeps its italics inside the essay’s title.'],['“Lamplight and Terror in ‘The Turn of the Screw,’”','Single quotation marks are for a short work’s title inside a quoted title. A novella keeps its italics.']],[0]),' published in ',S('t3','The journal',[
+  ['<i>Studies in the Ghost Story</i>'],['“Studies in the Ghost Story”','A journal’s title is italicized.']],[0]),'.</p>']},
+
+{name:'A long quotation',task:'Quote the whole passage. It runs longer than four lines.',
+ desk:'Prose longer than four lines is set off as a block: indented half an inch, double-spaced, with no quotation marks. The citation comes after the final period.',
+ wc:['voss'],src:{cap:'Voss, page 74',h:LONG},
+ parts:['<p>Voss describes the wheel as the one possession a family would not part with:</p>',S('q','The quotation',[
+  [`<p class="bq">${LONG} (74)</p>`],
+  [`<p class="bq">“${LONG}” (74)</p>`,'A block quotation takes no quotation marks. The indentation shows that it is quoted.'],
+  [`<p class="bq">${LONG.slice(0,-1)} (74).</p>`,'In a block quotation, the citation comes after the final period.'],
+  [`<p class="runin">“${LONG}” (74).</p>`,'A quotation longer than four lines of prose is set off as a block, indented half an inch.']],[0],true)],
+ flag:'Block quotation rules from the OWL’s quotation page and the MLA Style Center’s formatting guide.'},
+
+{name:'Dialogue from a play',task:'Quote the exchange between Callie and the Ferryman as a block. It is act 2, scene 1.',
+ desk:'In a block quotation of dialogue, each speaker’s name is in capitals followed by a period, indented half an inch; the rest of the speech is indented further.',
+ wc:['holloway'],src:{cap:'The Ferryman’s Wake, act 2, scene 1',h:DIA.map(([n,t])=>`<b>${n}.</b> ${t}`).join('<br>')},
+ parts:['<p>Holloway gives the argument in two lines:</p>',S('q','The dialogue',[
+  [dialogue('ok')],[dialogue('lower'),'Set each speaker’s name in capitals, followed by a period.'],[dialogue('quotes'),'A block quotation takes no quotation marks.'],[dialogue('runin'),'Dialogue between characters is set off as a block, one speech per paragraph, each beginning with the speaker’s name.']],[0],true)],
+ flag:'Format from the OWL’s in-text citation page (speaker in capitals, period, half-inch indent, further indent for later lines; act and scene in the citation).'},
+
+{kind:'page',name:'The first page',task:'Fix the first page. It was typed in Word with Word’s defaults.',
+ desk:'MLA asks for one consistent page: the same typeface everywhere, double spacing throughout, a four-line heading, a plain centered title, and your last name with the page number at top right.',
+ last:'Lindqvist',
+ ctl:[
+  {id:'font',label:'Typeface',course:COURSE.on,opts:['Aptos (Word’s default)','Calibri','Times New Roman','Georgia','Comic Sans MS'],key:COURSE.on?[2]:[0,1,2,3],note:COURSE.on?'This course uses Times New Roman.':'Choose a readable typeface whose italics are easy to tell from regular type.'},
+  {id:'size',label:'Size',course:COURSE.on,opts:['11 pt (Word’s default)','12 pt','14 pt'],key:[1],note:'Use 12-point type.'},
+  {id:'spacing',label:'Line spacing',opts:['1.08, 8 pt after (Word’s default)','Single','Double, 8 pt after','Double, 0 pt after','Exactly 24 pt, 0 pt after'],key:[3,4],note:'Double-space everything, with no extra space after paragraphs. Word’s default adds 8 points after each one.'},
+  {id:'heading',label:'Heading, top left',opts:['Name / Instructor / Course / Date','Name / Course / Instructor / Date','Date / Name / Instructor / Course','None: a title page instead'],key:[0],note:'The heading is four lines, flush left: your name, your instructor’s name, the course, and the date. No title page unless your instructor asks for one.'},
+  {id:'title',label:'Title',opts:['Plain, centered','Bold, centered','Underlined, centered','All capitals, centered','Plain, flush left'],key:[0],note:'Center the title in plain type: no bold, underlining, italics, quotation marks, or all capitals.'},
+  {id:'tital',label:'Novella named in the title',opts:['<i>The Turn of the Screw</i> in italics','No italics anywhere in a title'],key:[0],note:'A title of another work inside your title is styled as it would be in your sentences: italics for a novella.'},
+  {id:'rh',label:'Running header, top right',opts:['Page number only (Word’s default)','Lindqvist 1','Lindqvist p. 1','Lindqvist - 1','None'],key:[1],note:'Your last name, a space, and the page number. No “p.,” hyphen, or other mark.'},
+  {id:'rhfont',label:'Header typeface',opts:['Same as the text','Word’s header default'],key:[0],note:'The header uses the same typeface and size as the rest of the paper, as in the Handbook’s sample papers. Word’s header style keeps its own font unless you change it.'},
+  {id:'indent',label:'Paragraph indent',opts:['Tab, 0.5 inch','No indent','Five spaces','No indent, blank line between paragraphs'],key:[0],note:'Indent the first line of each paragraph half an inch with the Tab key.'},
+  {id:'align',label:'Alignment',opts:['Left, ragged right','Justified'],key:[0],note:'Leave the right margin ragged. Don’t justify.'}],
+ start:{font:0,size:0,spacing:0,heading:3,title:1,tital:1,rh:0,rhfont:1,indent:3,align:1},
+ flag:'Header typeface matched to the text per the Handbook’s sample papers (confirmed by the instructor). “Double” and “Exactly 24 pt” are both accepted, with no space after paragraphs.'}
+];
+
+/* ---------- Passages ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function slots(ex){return ex.parts.filter(p=>typeof p!=='string')}
+function passage(ex,ch,mode,res){
+  return ex.parts.map(p=>{
+    if(typeof p==='string')return p;
+    const i=mode==='key'?p.key[0]:ch[p.id];
+    if(mode==='key')return p.opts[i].h;
+    const st=res?(res.bad.has(p.id)?' bad':' good'):'';
+    const op=S_.open===p.id?' open':'';
+    if(p.block)return `<div class="bslot${i!=null?' set':''}${st}${op}" data-slot="${p.id}" role="button" tabindex="0" aria-label="${esc(p.label)}">${i!=null?p.opts[i].h:'<span class="slot empty">Choose how to set the quotation</span>'}</div>`;
+    const tiny=p.opts.every(o=>o.h.length<=2)?' tiny':'';
+    return i!=null?`<span class="slot${tiny}${st}${op}" data-slot="${p.id}" role="button" tabindex="0" aria-label="${esc(p.label)}">${p.opts[i].h||'&#8203;&nbsp;'}</span>`:`<span class="slot empty${op}" data-slot="${p.id}" role="button" tabindex="0">choose ${esc(p.label.toLowerCase())}</span>`;
+  }).join('');
+}
+function check(ex,ch){
+  const errs=[],bad=new Set();
+  slots(ex).forEach(p=>{const i=ch[p.id];
+    if(i==null){errs.push({h:p.label+': not chosen',b:'Tap the marked spot in the passage and choose a form.'});bad.add(p.id);return}
+    if(!p.key.includes(i)){errs.push({h:p.label,b:p.opts[i].n||'Choose a different form.'});bad.add(p.id)}});
+  return{errs,bad};
+}
+function checkPage(ex,st){const errs=[];ex.ctl.forEach(c=>{if(!c.key.includes(st[c.id]))errs.push({h:c.label+': '+c.opts[st[c.id]].replace(/<[^>]+>/g,''),b:c.note})});return{errs}}
+
+/* ---------- The first page, drawn ---------- */
+function sheetHTML(ex,st){
+  const fam=['"Aptos","Segoe UI",system-ui,sans-serif','Calibri,Carlito,"Segoe UI",sans-serif','"Times New Roman",Times,serif','Georgia,serif','"Comic Sans MS","Comic Neue",cursive'][st.font];
+  const sz=[11,12,14][st.size]/12;
+  const lh=[1.08,1,2,2,2][st.spacing],after=[8,0,8,0,0][st.spacing]/12;
+  const base=`font-family:${fam};font-size:${sz}em;line-height:${lh};`;
+  const pafter=`margin-bottom:${after*sz}em;`;
+  const head=[['Ana Lindqvist','Professor Marsden','ENGL 1302','14 October 2026'],['Ana Lindqvist','ENGL 1302','Professor Marsden','14 October 2026'],['14 October 2026','Ana Lindqvist','Professor Marsden','ENGL 1302'],null][st.heading];
+  const nov=st.tital===0?'<i>The Turn of the Screw</i>':'The Turn of the Screw';
+  const tstyle=['text-align:center;','text-align:center;font-weight:700;','text-align:center;text-decoration:underline;','text-align:center;text-transform:uppercase;','text-align:left;'][st.title];
+  const ttext=`Candlelight and Doubt in ${nov}`;
+  const ind=['text-indent:.5in;','text-indent:0;','text-indent:2.5ch;','text-indent:0;'][st.indent];
+  const gap=st.indent===3?`margin-bottom:${lh}em;`:'';
+  const al=st.align?'text-align:justify;':'text-align:left;';
+  const rh=['<span>1</span>','Lindqvist 1','Lindqvist p. 1','Lindqvist - 1',''][st.rh];
+  const rhs=st.rhfont===0?base.replace(/line-height:[^;]+;/,''):'font-family:"Aptos","Segoe UI",system-ui,sans-serif;font-size:.92em;';
+  const body=['The governess in Henry James’s novella sees by candlelight, and the candle decides what she can know. Brandt argues that the light “frames the ghost before the ghost appears” (41), so that every apparition arrives already lit for her.','What the governess cannot see matters as much. The dark corners of Bly are not empty; they are simply the places her light has not reached, and James leaves the reader standing in them with her.'];
+  return `<div class="pagewrap"><div class="sheet">${rh?`<div class="rh" style="${rhs}">${rh}</div>`:''}<div style="${base}">${head?head.map(l=>`<p style="${pafter}">${l}</p>`).join(''):'<p style="'+pafter+'color:#999;font-style:italic">[title page]</p>'}<p style="${tstyle}${pafter}">${ttext}</p>${body.map(t=>`<p style="${ind}${al}${pafter}${gap}">${t}</p>`).join('')}</div></div></div>`;
+}
+
+/* ---------- Guide ---------- */
+const GWC={ashby:'Ashby, Theodora. <i>The Cotton Gin and the Ghost: Haunted Industry in the Old South</i>. Pecan Bayou UP, 2018.',mercer:'Mercer, Paul, and Hana Ito. <i>Reading the American Frontier</i>. 2nd ed., Longleaf Press, 2020.',quint:'Quintero, Elena, et al. <i>Swamp Lights: Folklore of the Gulf Coast</i>. U of Sabine P, 2015.',ghost:'“Ten Ghost Lights of the Gulf Coast.” <i>Coastal Lore</i>, 3 Mar. 2023, www.coastallore.org/ghost-lights.',widow:'<i>The Widow’s Lantern</i>. Directed by Owen Hale, Bayou Pictures, 1958.'};
+const gx=(label,p,wc)=>`<div class="gex"><div class="label">${label}</div><p class="p">${p}</p>${wc?`<p class="wc">${wc}</p>`:''}</div>`;
+const GUIDE=[
+ {t:'Pointers',b:()=>`<p>An in-text citation is a <b>pointer</b>. It sends the reader to one entry in your Works Cited list and to the exact place in that source. So it holds two things: the first word of the works-cited entry, and a location, such as a page.</p>
+  ${gx('A citation and the entry it points to','Cotton mills, Ashby argues, were “the first haunted factories in America” (<mark>Ashby</mark> 112).',GWC.ashby.replace('Ashby,','<mark>Ashby</mark>,'))}
+  <p>Whatever the entry begins with is what the citation uses: an author’s last name, or a title when there is no author.</p>
+  <p class="hint">The examples in this guide come from invented sources, different from the ones in the exercises.</p>`},
+ {t:'Author and page',b:()=>`<p>The basic citation is the author’s last name and the page number, with nothing between them. The period of your sentence goes after the parentheses.</p>
+  ${gx('Author in the parentheses','The mills ran “through every hour of the night” (Ashby 114).')}
+  ${gx('Author in your sentence','Ashby notes that the mills ran “through every hour of the night” (114).')}
+  <h4>Watch for</h4><ul><li>No comma between author and page, and no “p.” or “page.”</li><li>The last name only.</li><li>If your sentence names the author, the parentheses hold only the page.</li><li>Once a paragraph has named its source, later citations to it need only the page, until another source comes between. Then name the first source again.</li></ul>
+  ${gx('Carrying a source forward','Ashby calls the mills “the first haunted factories in America” (112) and the night shift “a congregation of the sleepless” (33). Mercer and Ito disagree (45), but the shifts ran “through every hour of the night” (Ashby 114).')}`},
+ {t:'Names',b:()=>`<ul><li>Give a person’s full name the first time you mention them in your sentences, and the surname alone after that: Theodora Ashby, then Ashby.</li><li>If the name first appears in a citation, use the full name the first time you mention the person in a sentence.</li><li>If two people share a surname, use full names in your sentences whenever a reader could mix them up, and add the first initial in citations: (T. Ashby 40).</li><li>Characters in a work may be called what the work calls them, after their first full mention. ${CR}</li></ul>
+  ${gx('First mention, then after','Theodora Ashby spent years in mill archives. Ashby found that the night shift ran without a break for decades.')}`},
+ {t:'More than one author',b:()=>`${gx('Two authors: both names, joined by “and”','Frontier diaries “record weather more faithfully than feeling” (Mercer and Ito 45).',GWC.mercer)}
+  ${gx('Three or more: the first name and et al.','Ghost lights were reported “in every parish with a marsh” (Quintero et al. 9).',GWC.quint)}
+  ${gx('Two sources for one point: a semicolon between them','Both books treat folklore as evidence (Mercer and Ito 12; Quintero et al. 30).')}`},
+ {t:'Titles as pointers',b:()=>`<p>When an entry begins with a title, the citation uses the title, shortened, and styled the same way.</p>
+  ${gx('No author: a shortened title, in quotation marks for a web page','Fishermen still report “a green light that walks” (“Ten Ghost Lights”).',GWC.ghost)}
+  ${gx('A film whose entry begins with its title, located by time','The lantern first appears in the window at dusk (<i>Widow’s Lantern</i> 01:12:40-01:13:05).',GWC.widow)}
+  ${gx('Two works by one author: a short title says which','Ashby calls the night shift “a congregation of the sleepless” (<i>Cotton Gin</i> 33).')}
+  <h4>Watch for</h4><ul><li>Web pages have no page numbers. Don’t invent one.</li><li>Point to the director only when the entry begins with the director.</li><li>Words you found quoted in a source are cited with <b>qtd. in</b>: (qtd. in Ashby 40).</li></ul>`},
+ {t:'Punctuation around quotations',b:()=>`<ul><li>Periods and commas go <b>after</b> the citation.</li><li>With no citation after the quotation, a period or comma goes <b>inside</b> the closing quotation marks. Colons and semicolons always go outside.</li><li>A question mark or exclamation point that belongs to the quotation stays inside the quotation marks, and your period follows the citation.</li><li>A question mark that belongs to your sentence goes after the citation.</li></ul>
+  ${gx('The quotation asks the question','Ashby asks, “Who keeps a mill running at midnight?” (90).')}
+  ${gx('You ask the question','Did the mills really run “through every hour of the night” (Ashby 114)?')}`},
+ {t:'Poems and plays',b:()=>`<ul><li>Mark line breaks with a slash, with a space on each side; a stanza break takes a double slash.</li><li>Cite line numbers, not pages. The first citation says “lines”; after that, the numbers alone.</li><li>Cite a verse play by act, scene, and line, in arabic numerals separated by periods.</li></ul>
+  ${gx('Two lines of a poem','The speaker hears the marsh “calling low / Across the water” (lines 3-4).')}
+  ${gx('A verse play','The king’s boast, “I hold the tide as other men hold land,” is answered by the river itself (3.2.14).')}`},
+ {t:'Block quotations',b:()=>`<p>Prose longer than four lines, or verse longer than three, is set off as a <b>block</b>:</p><ul><li>Start it on a new line, indented half an inch.</li><li>Keep double spacing. Use no quotation marks.</li><li>Put the citation after the final period.</li><li>For dialogue from a play, start each speech with the speaker’s name in capitals and a period, and indent the rest of the speech further.</li></ul>
+  <div class="gex"><div class="label">A block quotation</div><div class="paper" style="box-shadow:none;padding:8px 4px"><p style="text-indent:0">Ashby describes the night shift:</p><p class="bq">The bell rang at ten and again at two, and between the bells the room belonged to the machines. The workers learned to speak in signs, because no voice could carry over the looms, and some of them went on speaking that way at home, years after the mill had closed. (115)</p></div></div>`},
+ {t:'Changing a quotation',b:()=>`<ul><li>Mark words you leave out with an ellipsis: three periods with a space before each and a space after the last ( . . . ).</li><li>Use an ellipsis only where the omission isn’t obvious. A fragment worked into your sentence needs none at the start or the end.</li><li>Word’s AutoCorrect turns typed periods into a single ellipsis character (…). Undo it or turn off that AutoCorrect option.</li><li>Words you add go in square brackets.</li></ul>
+  ${gx('An omission','The mills were “a congregation . . . of the sleepless” (Ashby 33).')}
+  ${gx('An addition','Ashby writes that “[the foreman] never once slept in the house” (61).')}`},
+ {t:'Titles in your sentences',b:()=>`<p>Titles in your own sentences follow the same rules as in the Works Cited list: italics for works that stand alone (books, films, journals, albums), quotation marks for works inside something larger (essays, stories, poems, articles, episodes, songs). A title inside a quoted title keeps its own styling.</p>
+  ${gx('Three kinds of title','In <i>Swamp Lights</i>, the essay “Green Fire on the Bayou” compares the lights to those in Poe’s “The City in the Sea.”')}`},
+ {t:'Quoting well',b:()=>`<p>Citation tells the reader where words came from. Quoting well decides which words, and what you do with them.</p>
+  <h4>Why quote</h4><ul><li>To present textual evidence you will analyze.</li><li>To bring in the support of earlier arguments, or to set out a position you will answer.</li><li>To give the reader the voice or style of an author or character.</li></ul>
+  <h4>When to paraphrase instead</h4><ul><li>When the gist matters and the exact wording doesn’t.</li><li>When the original would be needlessly hard for your reader, or would take a lot of grammatical tailoring.</li><li>When you need to keep your own voice in charge.</li></ul>
+  <h4>Failures of quotation</h4><ul><li><b>Plagiarism:</b> borrowing without attribution.</li><li><b>Floating quotation:</b> borrowing without incorporation. Every quotation rides in a sentence of yours.</li><li><b>Misquotation:</b> borrowing without care. Everything in quotation marks must be exactly as written.</li><li><b>Thin quotation:</b> borrowing without context. Say who wrote it, in what work, who is speaking, about whom, and why it matters to you.</li><li><b>Misuse:</b> borrowing without understanding, so the quotation doesn’t prove what you claim.</li><li><b>Frankensteining:</b> borrowing without an argument, so the essay is all quotation except for the stitches.</li></ul>
+  <h4>Introducing a quotation ${CR}</h4><ul><li>A colon after a complete sentence: Ashby’s point is simple: “…”</li><li>A comma after a verb of saying: Ashby writes, “…”</li><li>Nothing at all when the quotation runs on in your own sentence: Ashby argues that “…”</li></ul>
+  <h4>Precise verbs</h4><p>“Writes” and “says” wear thin. Choose the verb that says what the source is doing: argues, asserts, suggests, proposes, concedes, admits, denies, questions, refutes, demonstrates, observes, reports, emphasizes.</p>`},
+ {t:'The first page',b:()=>`<ul><li>No title page. At top left, on four double-spaced lines: your name, your instructor’s name, the course, and the date.</li><li>The title, centered, in plain type: no bold, underlining, italics, quotation marks, or all capitals. Titles of other works inside it are styled as usual.</li><li>At top right of every page, half an inch from the top: your last name, a space, and the page number, in the same typeface as the text.</li><li>Double-space everything, with no extra space after paragraphs. Word’s defaults (1.08 lines and 8 points after each paragraph) do not.</li><li>One-inch margins. Indent paragraphs half an inch with Tab. Leave the right margin ragged.</li><li>A readable typeface whose italics stand out, at 12 points. ${COURSE.on?`In this course: ${COURSE.font}, ${COURSE.size}. ${CR}`:''}</li></ul>
+  <div class="actions" style="margin-top:12px"><button class="btn" data-go="0">Start practicing</button></div>`}
+];
+
+/* ---------- State ---------- */
+const store={get(){try{return JSON.parse(localStorage.getItem('pointers-v1'))||{}}catch(e){return{}}},set(v){try{localStorage.setItem('pointers-v1',JSON.stringify(v))}catch(e){}}};
+const saved=store.get();
+const S_={view:'guide',g:0,ex:0,ch:EX.map(ex=>ex.kind==='page'?{...ex.start}:{}),open:null,res:null,showKey:false,done:new Set(saved.done||[]),name:saved.name||''};
+if(S_.done.size)S_.view='bench';
+const $=s=>document.querySelector(s);
+function save(){store.set({done:[...S_.done],name:S_.name})}
+
+/* ---------- Views ---------- */
+function stripHTML(){return '<nav class="strip" aria-label="Exercises">'+EX.map((e,i)=>`<button data-go="${i}" aria-current="${i===S_.ex}" class="${S_.done.has(i)?'done':''}" title="${esc(e.name)}">${i+1}</button>`).join('')+'</nav>'}
+function resultHTML(errs,extra){const n=errs.length;
+  return `<div class="proof" aria-live="polite"><div class="stampline"><span class="stamp ${n?'dirty':'clean'}">${n?n+' to fix':'Correct'}</span><span class="hint">${n?'Fix the marked items and check again.':'Ready to hand in.'}</span></div>${n?'<ul class="corr">'+errs.map(e=>`<li><b>${e.h}</b>${e.b}</li>`).join('')+'</ul>':''}${extra||''}</div>`}
+function actionsHTML(){return `<div class="actions"><button class="btn" id="check">Check my work</button><button class="btn ghost" id="reset">Start over</button>${S_.ex<EX.length-1?'<button class="btn ghost" id="next">Next exercise</button>':''}</div>`}
+function benchHTML(){
+  const ex=EX[S_.ex],ch=S_.ch[S_.ex];
+  if(ex.kind==='page')return pageHTML();
+  const head=`<div class="task"><span class="label">Exercise ${S_.ex+1} of ${EX.length}</span><h2>${ex.name}${ex.course?CR:''}</h2><div>${ex.task}</div></div><div class="desk"><b>The reference desk</b>${ex.desk}</div>`;
+  const src=ex.src?`<div class="card"><div class="label">The source · ${ex.src.cap}</div>${ex.src.lines?`<div class="src">${ex.src.lines.map(([n,t])=>`<div class="ln"><span>${n}</span><span>${t}</span></div>`).join('')}</div>`:`<p class="src">${ex.src.h}</p>`}</div>`:'';
+  const wc=`<div class="card"><div class="label">Your Works Cited list</div>${ex.wc.map(k=>`<p class="wc">${W[k]}</p>`).join('')}</div>`;
+  const pas=`<div class="paper"><span class="lbl">Your paper</span>${passage(ex,ch,'student',S_.res)}</div>`;
+  let side;
+  const open=slots(ex).find(p=>p.id===S_.open);
+  if(open){const i=ch[open.id];
+    side=`<div><div class="label">${open.label}: choose one</div><div class="opts" style="margin-top:6px">${open.opts.map((o,k)=>`<button class="opt" data-opt="${k}" aria-pressed="${i===k}">${open.block?`<div class="paper">${o.h}</div>`:(o.d||o.h)}</button>`).join('')}</div></div>`;
+  }else side=`<p class="hint">Tap a marked spot in your paper to choose how it should read. ${slots(ex).length>1?'This passage has '+slots(ex).length+' spots to settle.':''}</p>`;
+  let proof='';
+  if(S_.res){const n=S_.res.errs.length;let extra='';
+    if(n&&!S_.showKey)extra=`<div><button class="btn ghost" id="showkey">Show the correct version</button></div>`;
+    if(S_.showKey||!n)extra+=`<div class="paper"><span class="lbl">${n?'Correct version':'Your passage'}</span>${passage(ex,null,'key')}</div>`;
+    proof=resultHTML(S_.res.errs,extra)}
+  return stripHTML()+`<div class="grid"><section class="stack">${head}${wc}${src}${pas}</section><section class="panel">${side}${actionsHTML()}${proof}</section></div>`;
+}
+function pageHTML(){
+  const ex=EX[S_.ex],st=S_.ch[S_.ex];
+  const head=`<div class="task"><span class="label">Exercise ${S_.ex+1} of ${EX.length}</span><h2>${ex.name}</h2><div>${ex.task}</div></div><div class="desk"><b>The reference desk</b>${ex.desk}</div>`;
+  const ctl=ex.ctl.map(c=>`<div><div class="label">${c.label}${c.course?CR:''}</div><div class="row" style="margin-top:4px">${c.opts.map((o,i)=>`<button class="chip" data-pg="${c.id}" data-v="${i}" aria-pressed="${st[c.id]===i}">${o}</button>`).join('')}</div></div>`).join('');
+  return stripHTML()+`<div class="grid"><section class="stack">${head}${sheetHTML(ex,st)}</section><section class="panel">${ctl}${actionsHTML()}${S_.res?resultHTML(S_.res.errs):''}</section></div>`;
+}
+function guideHTML(){
+  const i=S_.g,g=GUIDE[i];
+  return `<div class="guide"><nav class="grail" aria-label="Guide"><ol>${GUIDE.map((x,k)=>`<li><button data-gs="${k}" aria-current="${k===i}">${x.t}</button></li>`).join('')}</ol></nav><article class="gcard"><span class="label">Guide · ${i+1} of ${GUIDE.length}</span><h2>${g.t}</h2>${g.b()}<div class="gnav"><button class="btn ghost" data-gs="${i-1}" ${i===0?'disabled':''}>Back</button>${i<GUIDE.length-1?`<button class="btn" data-gs="${i+1}">Next: ${GUIDE[i+1].t}</button>`:''}</div></article></div>`;
+}
+function keysHTML(){
+  return `<div class="keys"><div class="prose"><h2 style="font-family:var(--f-book);font-weight:400">Key sheet</h2><p>The correct form of every exercise, drawn by the same code that checks students. Course rules are ${COURSE.on?'on':'off'}. Rules come from the Purdue OWL (<a href="https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_in_text_citations_the_basics.html" target="_blank" rel="noopener">in-text citations</a>, <a href="https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_formatting_quotations.html" target="_blank" rel="noopener">quotations</a>, <a href="https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_general_format.html" target="_blank" rel="noopener">general format</a>) and the MLA Style Center (<a href="https://style.mla.org/app/uploads/sites/3/2020/12/Formatting-a-Research-Paper_v3_-The-MLA-Style-Center.pdf" target="_blank" rel="noopener">formatting a paper</a>, <a href="https://style.mla.org/styling-ellipses/" target="_blank" rel="noopener">ellipses</a>, <a href="https://style.mla.org/line-numbers-in-text-citation/" target="_blank" rel="noopener">poem lines</a>, <a href="https://style.mla.org/edition-without-line-numbers/" target="_blank" rel="noopener">plays</a>, <a href="https://style.mla.org/the-placement-of-a-comma-or-period-after-a-quotation/" target="_blank" rel="noopener">commas and periods</a>) and the OWL’s <a href="https://owl.purdue.edu/owl/general_writing/punctuation/quotation_marks/more_quotation_mark_rules.html" target="_blank" rel="noopener">quotation-mark rules</a>. All sources are invented for practice.</p></div>`+
+  EX.map((ex,i)=>{
+    if(ex.kind==='page')return `<article><span class="label">Exercise ${i+1}</span><h3>${ex.name}</h3>${ex.ctl.map(c=>`<p style="margin:2px 0"><b>${c.label}:</b> ${c.key.map(k=>c.opts[k]).join(' or ')}${c.course?CR:''}</p>`).join('')}${ex.flag?`<div class="flag">${ex.flag}</div>`:''}</article>`;
+    return `<article><span class="label">Exercise ${i+1}</span><h3>${ex.name}${ex.course?CR:''}</h3><div class="paper">${passage(ex,null,'key')}</div>${ex.flag?`<div class="flag">${ex.flag}</div>`:''}</article>`}).join('')+'</div>';
+}
+
+/* ---------- Completion slip (same scheme as Core Elements, its own phrase) ---------- */
+const SALT='ferrymans-wake-2-1-lines-166-67';
+const MON=['Jan.','Feb.','Mar.','Apr.','May','June','July','Aug.','Sept.','Oct.','Nov.','Dec.'];
+function today(){const d=new Date();return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear()}
+function normName(n){return String(n).trim().replace(/\s+/g,' ').toLowerCase()}
+function cyrb53(str,seed=0){let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0;i<str.length;i++){const ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}
+  h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return 4294967296*(2097151&h2)+(h1>>>0)}
+function slipCode(name,n,total,date){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let x=cyrb53(SALT+'|'+normName(name)+'|'+n+'/'+total+'|'+date.trim(),11),s='';for(let i=0;i<8;i++){s+=A[x%32];x=Math.floor(x/32)}return s.slice(0,4)+'-'+s.slice(4)}
+function slipLine(name){const n=S_.done.size,t=EX.length,d=today();return `Pointers · ${name.trim()} · ${n}/${t} · ${d} · ${slipCode(name,n,t,d)}`}
+function slipHTML(){
+  const n=S_.done.size,t=EX.length;
+  return `<div class="grid" style="margin-top:18px"><section class="prose"><span class="label">Your progress</span><h2 style="font-family:var(--f-book);font-weight:400;margin:4px 0 10px">${n} of ${t} exercises correct</h2><p>An exercise counts once you get it right, however many tries it takes. Progress is saved in this browser on this device, so finish on the same device you started on.</p><ol style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px">${EX.map((e,i)=>`<li style="display:flex;gap:8px;align-items:baseline"><span style="font-family:var(--f-type);color:${S_.done.has(i)?'var(--ok)':'var(--muted)'}">${S_.done.has(i)?'✓':'·'}</span><button class="linkbtn" data-go="${i}">${i+1}. ${e.name}</button></li>`).join('')}</ol></section>
+  <section class="panel"><div><label class="label" for="stuName">Your name, as it appears in D2L</label><input id="stuName" value="${esc(S_.name)}" autocomplete="name" style="margin-top:6px"></div>
+  <div><div class="label">Your slip</div><div class="slipbox" id="slipText" style="margin-top:6px">${S_.name.trim()?esc(slipLine(S_.name)):'Type your name to make your slip.'}</div></div>
+  <div class="actions"><button class="btn" id="copySlip">Copy the slip</button></div><p class="hint" id="copyMsg">Paste the whole line into the D2L assignment. Don’t edit it: any change breaks the code.</p></section></div>`;
+}
+function verifyHTML(){return `<div class="prose" style="margin-top:18px"><span class="label">For the instructor</span><h2 style="font-family:var(--f-book);font-weight:400;margin:4px 0 10px">Check completion slips</h2><p>Paste one slip or a whole column of them.</p><textarea id="verifyIn" rows="8">${esc(S_.vin||'')}</textarea><div class="actions" style="margin:10px 0"><button class="btn" id="verifyGo">Check slips</button></div><div>${S_.vout||''}</div></div>`}
+function verifySlips(text){const re=/Pointers\s*[·•|]\s*(.+?)\s*[·•|]\s*(\d+)\s*\/\s*(\d+)\s*[·•|]\s*(.+?)\s*[·•|]\s*([A-Z0-9]{4}-[A-Z0-9]{4})/gi;const rows=[];let m;
+  while((m=re.exec(text))){const [,name,n,t,date,code]=m;rows.push({name,n:+n,t:+t,date,ok:slipCode(name,+n,+t,date)===code.toUpperCase()})}
+  if(!rows.length)return '<p>No slips found. A slip looks like: Pointers · Name · 27/27 · 14 Oct. 2026 · ABCD-EFGH</p>';
+  return '<ul class="corr">'+rows.map(r=>`<li style="border-left-color:${r.ok?'var(--ok)':'var(--stamp)'}"><b style="color:${r.ok?'var(--ok)':'var(--stamp)'}">${r.ok?'Valid':'Does not match'}</b>${esc(r.name)} · ${r.n}/${r.t}${r.ok&&r.t!==EX.length?' (made with an older set of '+r.t+' exercises)':''}${r.ok&&r.n<r.t?' · not finished':''} · ${esc(r.date)}</li>`).join('')+'</ul>'}
+
+/* ---------- Render and events ---------- */
+function render(){
+  ['Guide','Bench','Slip'].forEach(v=>$('#v'+v).setAttribute('aria-pressed',S_.view===v.toLowerCase()));
+  $('#app').innerHTML=S_.view==='guide'?guideHTML():S_.view==='bench'?benchHTML():S_.view==='slip'?slipHTML():S_.view==='verify'?verifyHTML():keysHTML();
+}
+function route(){const h=location.hash.replace('#','');if(h==='desk-key-sfa')S_.view='keys';else if(h==='desk-verify-sfa')S_.view='verify';else if(S_.view==='keys'||S_.view==='verify')S_.view='bench'}
+function clearRes(){S_.res=null;S_.showKey=false}
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('button,[data-slot]');if(!t)return;
+  const ex=EX[S_.ex],ch=S_.ch[S_.ex];
+  if(t.id==='vGuide'){S_.view='guide';return render()}
+  if(t.id==='vBench'){S_.view='bench';return render()}
+  if(t.id==='vSlip'){S_.view='slip';return render()}
+  if(t.dataset.gs!=null){S_.g=Math.max(0,Math.min(GUIDE.length-1,+t.dataset.gs));render();scrollTo({top:0});return}
+  if(t.dataset.go!=null){S_.ex=+t.dataset.go;S_.view='bench';S_.open=null;clearRes();render();scrollTo({top:0});return}
+  if(t.id==='next'){S_.ex++;S_.open=null;clearRes();render();scrollTo({top:0});return}
+  if(t.id==='reset'){S_.ch[S_.ex]=ex.kind==='page'?{...ex.start}:{};S_.open=null;clearRes();return render()}
+  if(t.dataset.slot){S_.open=S_.open===t.dataset.slot?null:t.dataset.slot;return render()}
+  if(t.dataset.opt!=null&&S_.open){ch[S_.open]=+t.dataset.opt;const ss=slots(ex);const nx=ss.find(p=>ch[p.id]==null);S_.open=nx?nx.id:null;clearRes();return render()}
+  if(t.dataset.pg){ch[t.dataset.pg]=+t.dataset.v;clearRes();return render()}
+  if(t.id==='check'){S_.res=ex.kind==='page'?checkPage(ex,ch):check(ex,ch);S_.open=null;S_.showKey=false;if(!S_.res.errs.length){S_.done.add(S_.ex);save()}return render()}
+  if(t.id==='showkey'){S_.showKey=true;return render()}
+  if(t.id==='copySlip'){const txt=S_.name.trim()?slipLine(S_.name):'';const msg=$('#copyMsg');if(!txt){msg.textContent='Type your name first.';return}
+    const sel=()=>{const r=document.createRange();r.selectNodeContents($('#slipText'));const s=getSelection();s.removeAllRanges();s.addRange(r);msg.textContent='Selected. Copy it with your device’s Copy command.'};
+    try{navigator.clipboard.writeText(txt).then(()=>{msg.textContent='Copied. Paste it into the D2L assignment.'},sel)}catch(e){sel()}return}
+  if(t.id==='verifyGo'){S_.vin=$('#verifyIn').value;S_.vout=verifySlips(S_.vin);return render()}
+});
+document.addEventListener('keydown',ev=>{const t=ev.target;if(t.dataset&&t.dataset.slot&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();t.click()}});
+document.addEventListener('input',ev=>{if(ev.target.id==='stuName'){S_.name=ev.target.value;save();const el=$('#slipText');if(el)el.textContent=S_.name.trim()?slipLine(S_.name):'Type your name to make your slip.'}});
+window.addEventListener('hashchange',()=>{route();render()});
+route();render();
+</script>
+
+</body></html>
